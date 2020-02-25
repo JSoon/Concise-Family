@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Concise family test page</title>
+
+  <link rel="stylesheet" href="/concise-slider.css">
+</head>
+
+<body>
+  <!-- Concise Slider -->
+  <div id="J_ConciseSlider">
+    <div class="slider-wrapper">
+      <div class="slider-list-wrapper">
+        <div class="slider-list">
+          <div class="slider-item">1</div>
+          <div class="slider-item">2</div>
+          <div class="slider-item">3</div>
+          <div class="slider-item">4</div>
+          <div class="slider-item">5</div>
+        </div>
+      </div>
+      <div class="slider-indicator"></div>
+      <div class="slider-prev"></div>
+      <div class="slider-next"></div>
+    </div>
+  </div>
+
+  <!-- <script src="/demo.js"></script> -->
+  <script src="/concise-slider.js"></script>
+  <script>
+    ConciseFamily['concise-slider']({
+      selector: '#J_ConciseSlider',
+      gridNum: 4,
+      slideNum: 1
+    })
+  </script>
+</body>
+
+</html>
