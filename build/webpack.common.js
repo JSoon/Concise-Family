@@ -17,18 +17,20 @@ module.exports = {
   // https://webpack.js.org/configuration/mode/#root
   mode: ENV,
   entry: {
+    'concise-family': path.resolve(constants.srcPath, 'app'),
     'demo': path.resolve(constants.srcPath, 'components/demo/demo'),
     'concise-slider': path.resolve(constants.srcPath, 'components/slider/main')
   },
   output: {
     filename: `[name].js`,
-    path: path.resolve(constants.publicPath, publicDate),
+    path: path.resolve(constants.publicPath),
     publicPath: '/', // chunks resources base path
     // https://github.com/webpack/webpack/tree/master/examples/multi-part-library
     library: [LIB_NAME, '[name]'],
     libraryExport: 'default',
     // https://webpack.js.org/configuration/output/#outputlibrarytarget
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    globalObject: 'this'
   },
   devtool: 'inline-source-map',
   devServer: {

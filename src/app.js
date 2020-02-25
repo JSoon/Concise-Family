@@ -1,5 +1,5 @@
-import slider from './components/slider/main'
+import slider from '~/components/slider/main'
 
-export {
+export default {
   slider
 }

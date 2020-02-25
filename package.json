@@ -1,19 +1,18 @@
 {
-  "name": "concise-family",
-  "version": "1.0.0",
+  "name": "@jsoon/concise-family",
+  "version": "1.0.2",
   "description": "Concise components.",
-  "main": "src/app.js",
+  "main": "public/concise-family.js",
   "scripts": {
     "dev": "webpack-dev-server --config build/webpack.common.js --host 0.0.0.0",
     "prod": "NODE_ENV=production webpack --progress --config build/webpack.prod.js"
   },
   "keywords": [
+    "javascript-library",
+    "javascript-component",
     "slider"
   ],
-  "author": {
-    "name": "J.Soon",
-    "email": "serdeemail@gmail.com"
-  },
+  "author": "J.Soon <serdeemail@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.7.7",
@@ -39,5 +38,13 @@
   },
   "dependencies": {
     "classlist-polyfill": "^1.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JSoon/concise-slider.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JSoon/concise-slider/issues"
+  },
+  "homepage": "https://github.com/JSoon/concise-slider#readme"
 }
