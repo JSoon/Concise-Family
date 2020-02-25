@@ -1,5 +1,7 @@
 @import "~/sass/shared"
 
+$trans-duration: .3s
+
 .slider-wrapper
   @include clearfix
 
@@ -7,12 +9,15 @@
     overflow: hidden
 
     .slider-list
-      display: none
       @include clearfix
+      display: none
+      transition: all $trans-duration ease-in
 
       .slider-item
-        display: none
+        opacity: 0
         float: left
+        background-color: #eee
+        transition: all $trans-duration ease-in
 
   .slider-indicator
     margin: 2rem 0
@@ -28,3 +33,12 @@
 
       &.active
         background-color: $base-color
+
+  .slider-prev,
+  .slider-next
+    cursor: pointer
+
+    &:hover
+      background-color: #eee
+    
+

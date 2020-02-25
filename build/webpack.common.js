@@ -33,9 +33,9 @@ module.exports = {
   devtool: 'inline-source-map',
   devServer: {
     open: true,
-    openPage: 'src/test',
-    contentBase: constants.rootPath,
-    watchContentBase: false,
+    openPage: constants.srcPath,
+    // contentBase: constants.rootPath,
+    // watchContentBase: false,
     compress: true,
     port: 9000,
     watchOptions: {
