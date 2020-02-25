@@ -1,2 +1,2 @@
-# concise-slider
-A slider component written in ES6 of concise-family.
+# concise-family
+Components written in ES6 & CSS3 intended to provide concise functions.
