@@ -35,12 +35,16 @@
   <!-- <script src="/demo.js"></script> -->
   <script src="/concise-slider.js"></script>
   <script>
-    ConciseFamily['concise-slider']({
+    const mySlider = ConciseFamily['concise-slider']({
       selector: '#J_ConciseSlider',
       gridNum: 4,
       step: 2,
+      loop: true,
       // indicatorType: 'single',
       indicatorCtrl: true,
+      onCreated: params => {
+        console.log(params);
+      }
     })
   </script>
 </body>

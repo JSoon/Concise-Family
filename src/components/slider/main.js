@@ -5,20 +5,29 @@ import 'classlist-polyfill'
  * @description Concise slider component
  * Note: This is not a gallery plugin, so far there is no autoplay function, which is not one of the intended features.
  * 
- * @param {object}  params                config object
- * @param {string}  params.selector       id or class selector
- * @param {number}  params.gridNum        number of visible grids
- * @param {number}  params.step           step number of items for each slide, default to gridNum
- * @param {boolean} params.indicator      whether to generate indicator, default to true
- * @param {boolean} params.indicatorCtrl  whether the indicator could control slide, default to false
- * @param {string}  params.indicatorType  indicator type, page: one item represent gridNum slider items, single: one item maps a single slider item, default to page
- * @param {boolean} params.prevNext       whether to generate prev & next slide controllers, default to true
+ * @param {object}    params                Config object
+ * @param {string}    params.selector       Id or class selector
+ * @param {number}    params.gridNum        Number of visible grids
+ * @param {number}    params.step           Step number of items for each slide, default to gridNum
+ * @param {boolean}   params.loop           Whether to slide to the start or end while reaching the end or start, default to false
+ * @param {boolean}   params.indicator      Whether to generate indicator, default to true
+ * @param {boolean}   params.indicatorCtrl  Whether the indicator could control slide, default to false
+ * @param {string}    params.indicatorType  Indicator type, page: one item represent gridNum slider items, single: one item maps a single slider item, default to page
+ * @param {boolean}   params.prevNext       Whether to generate prev & next slide controllers, default to true
+ * @param {boolean}   params.autoResize     Whether to resize slider when window resize fires, default to false
+ * 
+ * Hooks functions
+ * @param {function}  params.onCreated      Fired when all the DOM have been created
  */
 
 let indicatorItemNum // Total indicator item number
 let curIndicatorItemIdx = 0 // Current indicator item number index
 let curVisibleStart, curVisibleEnd // Current visible items index range
-let reachStart, reachEnd // If reach the start or end after slide
+// If reach the start or end after slide
+let reachStart = true,
+  reachEnd = false
+let itemWidth // Slide individual item width
+let resizeTimer // Resize slider timer
 
 const slider = params => {
 
@@ -26,11 +35,17 @@ const slider = params => {
     selector,
     gridNum,
     step = params.gridNum,
+    loop = false,
     indicator = true,
     indicatorCtrl = false,
     indicatorType = 'page',
-    prevNext = true
+    prevNext = true,
+    autoResize = false,
+    onCreated = () => {}
   } = params
+
+  // API exposed to the instance
+  const API = {}
 
   if (!selector) {
     throw 'Slider has no id or class selector!'
@@ -40,6 +55,8 @@ const slider = params => {
   curVisibleStart = 0
   curVisibleEnd = gridNum - 1
 
+  //#region Initial DOM
+
   const sliderEle = document.querySelector(selector)
   const sliderWrapper = sliderEle.querySelector('.slider-wrapper') || sliderEle
   const sliderListWrapper = sliderWrapper.querySelector('.slider-list-wrapper')
@@ -47,15 +64,6 @@ const slider = params => {
   const sliderItems = sliderWrapper.querySelectorAll('.slider-item')
   const sliderIndicator = document.createElement('div')
   sliderIndicator.classList.add('slider-indicator')
-  indicator && sliderWrapper.appendChild(sliderIndicator)
-  const sliderPrev = document.createElement('div')
-  sliderPrev.innerHTML = 'Prev'
-  sliderPrev.classList.add('slider-prev')
-  const sliderNext = document.createElement('div')
-  sliderNext.innerHTML = 'Next'
-  sliderNext.classList.add('slider-next')
-  prevNext & sliderWrapper.appendChild(sliderPrev)
-  prevNext & sliderWrapper.appendChild(sliderNext)
 
   // Indicator item number
   if (indicatorType === 'page') {
@@ -63,27 +71,6 @@ const slider = params => {
   } else {
     indicatorItemNum = sliderItems.length
   }
-
-  // Calculate all the widths dynamically
-  const wrapperWidth = sliderListWrapper.clientWidth
-  const itemWidth = wrapperWidth / gridNum
-  const listWidth = itemWidth * sliderItems.length
-
-  // Set slider list width
-  sliderList.style.width = `${listWidth}px`
-
-  // Set slider item width
-  sliderItems.forEach((item, idx) => {
-    item.style.width = `${itemWidth}px`
-
-    // Display current slide items
-    if (idx < gridNum) {
-      item.style.opacity = 1
-    }
-  })
-
-  // Display slider list after width being initialized
-  sliderList.style.display = 'block'
 
   // Generate indicator items based on gridNum
   for (let i = 0; i < indicatorItemNum; i++) {
@@ -93,17 +80,45 @@ const slider = params => {
     sliderIndicator.appendChild(indicatorItem)
   }
   sliderIndicator.firstElementChild.classList.add('active')
+  indicator && sliderWrapper.appendChild(sliderIndicator)
+
+  const sliderPrev = document.createElement('div')
+  sliderPrev.innerHTML = 'Prev'
+  sliderPrev.classList.add('slider-prev')
+  const sliderNext = document.createElement('div')
+  sliderNext.innerHTML = 'Next'
+  sliderNext.classList.add('slider-next')
+  prevNext & sliderWrapper.appendChild(sliderPrev)
+  prevNext & sliderWrapper.appendChild(sliderNext)
+
+  onCreated({
+    sliderWrapper,
+    sliderListWrapper,
+    sliderList,
+    sliderIndicator,
+    sliderPrev,
+    sliderNext
+  })
+
+  //#endregion
+
+  // Calculate all the widths dynamically
+  resize({
+    sliderListWrapper,
+    sliderList,
+    sliderItems,
+    gridNum,
+    init: true
+  })
+
+  // Display slider list after width being initialized
+  sliderList.style.display = 'block'
 
   //#region Controllers
 
-  sliderList.addEventListener('transitionstart', e => {
-    updateItemsVisibility({
-      sliderItems,
-      gridNum,
-      step
-    })
-  })
-
+  // This event may have compatibility issues
+  // Tested on Safari, Firefox & Chrome
+  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/transitionend_event#Browser_compatibility
   sliderList.addEventListener('transitionend', e => {
     reachStart = curVisibleStart === 0 ? true : false
     reachEnd = curVisibleEnd === sliderItems.length - 1 ? true : false
@@ -120,6 +135,21 @@ const slider = params => {
     })
   })
 
+  // Resize slider when window resizes
+  if (autoResize) {
+    window.addEventListener('resize', e => {
+      resizeTimer && clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        resize({
+          sliderListWrapper,
+          sliderList,
+          sliderItems,
+          gridNum,
+        })
+      }, 1000)
+    })
+  }
+
   // Prev page
   sliderPrev.addEventListener('click', e => {
     updateListPosition({
@@ -127,8 +157,8 @@ const slider = params => {
       sliderList,
       sliderItems,
       step,
+      loop,
       gridNum,
-      itemWidth,
     })
   }, false)
 
@@ -139,8 +169,8 @@ const slider = params => {
       sliderList,
       sliderItems,
       step,
+      loop,
       gridNum,
-      itemWidth,
     })
   }, false)
 
@@ -160,8 +190,8 @@ const slider = params => {
         sliderList,
         sliderItems,
         step,
+        loop,
         gridNum,
-        itemWidth,
         indicatorType,
         newIndicatorItemIdx
       })
@@ -169,6 +199,17 @@ const slider = params => {
   }
 
   //#endregion
+
+  API.resize = () => {
+    return resize({
+      sliderListWrapper,
+      sliderList,
+      sliderItems,
+      gridNum,
+    })
+  }
+
+  return API
 
 }
 
@@ -178,8 +219,8 @@ function updateListPosition(params) {
     sliderList,
     sliderItems,
     step,
+    loop,
     gridNum,
-    itemWidth,
     indicatorType,
     newIndicatorItemIdx
   } = params
@@ -210,18 +251,26 @@ function updateListPosition(params) {
     curVisibleEnd = sliderItems.length - 1
     curVisibleStart = curVisibleEnd + 1 - gridNum
   }
-  if (reachStart && direction === 'prev') {
-    curVisibleEnd = sliderItems.length - 1
-    curVisibleStart = curVisibleEnd + 1 - gridNum
-  }
-  if (reachEnd && direction === 'next') {
-    curVisibleStart = 0
-    curVisibleEnd = curVisibleStart + gridNum - 1
+  if (loop) {
+    if (reachStart && direction === 'prev') {
+      curVisibleEnd = sliderItems.length - 1
+      curVisibleStart = curVisibleEnd + 1 - gridNum
+    }
+    if (reachEnd && direction === 'next') {
+      curVisibleStart = 0
+      curVisibleEnd = curVisibleStart + gridNum - 1
+    }
   }
 
   console.log('curVisibleRange', [curVisibleStart, curVisibleEnd]);
 
   sliderList.style.transform = `translate3d(-${curVisibleStart * itemWidth}px, 0, 0)`
+
+  updateItemsVisibility({
+    sliderItems,
+    gridNum,
+    step
+  })
 
 }
 
@@ -267,7 +316,35 @@ function updateItemsVisibility(params) {
     }
   })
 
+}
 
+function resize(params) {
+  const {
+    sliderListWrapper,
+    sliderList,
+    sliderItems,
+    gridNum,
+    init = false
+  } = params
+
+  const wrapperWidth = sliderListWrapper.clientWidth
+  itemWidth = wrapperWidth / gridNum
+  const listWidth = itemWidth * sliderItems.length
+
+  // Set slider list width
+  sliderList.style.width = `${listWidth}px`
+
+  // Set slider item width
+  sliderItems.forEach((item, idx) => {
+    item.style.width = `${itemWidth}px`
+
+    // Display current slide items
+    if (idx < gridNum && init) {
+      item.style.opacity = 1
+    }
+  })
+
+  return params
 }
 
 export default slider
