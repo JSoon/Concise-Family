@@ -10,16 +10,16 @@ Concise-Family is a vanilla Javascript library consisting of Javascript componen
   - [Usage](#usage)
 
 # Build
-There's nothing more to say about the build work which is bundled with webpack.
+There's nothing more to say about the building work which is bundled with Webpack.
 
 You can either use the resources in the public directory or build them via `npm run prod` by yourself.
 
 Note that all the concise components are registered under global namespace `ConciseFamily`. You can check that in the `webpack.common.js`.
 
-> Note: This library is build using UMD style so I'm pretty sure you know what it means.
+> Note: This library is built using UMD style so I'm pretty sure you know what it means.
 
 # Concise-Slider
-Concise-Slider offer you a quite light slider but consist of sufficient features. The code is clear enough even for the beginners. You can do whatever you want to customize and fulfill your own demands easily.
+Concise-Slider offers you a quite light slider but consists of sufficient features. The code is clear enough even for beginners. You can do whatever you want to customize and fulfill your own demands easily.
 
 ## Usage
 1. Script tag
