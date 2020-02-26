@@ -40,7 +40,8 @@ module.exports = merge(common, {
 	},
 	plugins: [
 		new webpack.SourceMapDevToolPlugin({
-			filename: '[name].js.map',
+			// https://github.com/webpack/webpack/issues/9732
+			filename: '[file].map',
 			// exclude: ['vendor.js']
 		})
 	]
