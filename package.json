@@ -1,6 +1,6 @@
 {
-  "name": "@jsoon/concise-family",
-  "version": "1.0.2",
+  "name": "concise-family",
+  "version": "1.0.0",
   "description": "Concise components.",
   "main": "public/concise-family.js",
   "scripts": {

@@ -24,9 +24,6 @@
           <div class="slider-item">6</div>
         </div>
       </div>
-      <div class="slider-indicator"></div>
-      <div class="slider-prev">Prev</div>
-      <div class="slider-next">Next</div>
     </div>
     <style>
       .slider-item {
@@ -41,7 +38,9 @@
     ConciseFamily['concise-slider']({
       selector: '#J_ConciseSlider',
       gridNum: 4,
-      // step: 1
+      step: 2,
+      // indicatorType: 'single',
+      indicatorCtrl: true,
     })
   </script>
 </body>
