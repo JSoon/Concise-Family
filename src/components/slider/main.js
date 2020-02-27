@@ -17,17 +17,10 @@ import 'classlist-polyfill'
  * @param {boolean}   params.autoResize     Whether to resize slider when window resize fires, default to false
  * 
  * Hooks functions
- * @param {function}  params.onCreated      Fired when all the DOM have been created
+ * @param {function}  params.onCreated        Fired when all the DOM have been created
+ * @param {function}  params.onBeforeSliding  Fired before sliding
+ * @param {function}  params.onAfterSliding   Fired after sliding
  */
-
-let indicatorItemNum // Total indicator item number
-let curIndicatorItemIdx = 0 // Current indicator item number index
-let curVisibleStart, curVisibleEnd // Current visible items index range
-// If reach the start or end after slide
-let reachStart = true,
-  reachEnd = false
-let itemWidth // Slide individual item width
-let resizeTimer // Resize slider timer
 
 const slider = params => {
 
@@ -41,11 +34,23 @@ const slider = params => {
     indicatorType = 'page',
     prevNext = true,
     autoResize = false,
-    onCreated = () => {}
+    onCreated = () => {},
+    onBeforeSliding = () => {},
+    onAfterSliding = () => {}
   } = params
 
   // API exposed to the instance
   const API = {}
+
+  // Private variables
+  let indicatorItemNum // Total indicator item number
+  let curIndicatorItemIdx = 0 // Current indicator item number index
+  let curVisibleStart, curVisibleEnd // Current visible items index range
+  // If reach the start or end after slide
+  let reachStart = true,
+    reachEnd = false
+  let itemWidth // Slide individual item width
+  let resizeTimer // Resize slider timer
 
   if (!selector) {
     throw 'Slider has no id or class selector!'
@@ -88,26 +93,29 @@ const slider = params => {
   const sliderNext = document.createElement('div')
   sliderNext.innerHTML = 'Next'
   sliderNext.classList.add('slider-next')
-  prevNext & sliderWrapper.appendChild(sliderPrev)
-  prevNext & sliderWrapper.appendChild(sliderNext)
+  if (prevNext && gridNum < sliderItems.length) {
+    sliderWrapper.appendChild(sliderPrev)
+    sliderWrapper.appendChild(sliderNext)
+  }
 
-  onCreated({
+  //#endregion
+
+  const callbackParams = {
     sliderWrapper,
     sliderListWrapper,
     sliderList,
     sliderIndicator,
     sliderPrev,
-    sliderNext
-  })
+    sliderNext,
+    curIndicatorItemIdx,
+    curVisibleStart,
+    curVisibleEnd
+  }
 
-  //#endregion
+  onCreated(callbackParams)
 
   // Calculate all the widths dynamically
   resize({
-    sliderListWrapper,
-    sliderList,
-    sliderItems,
-    gridNum,
     init: true
   })
 
@@ -128,11 +136,7 @@ const slider = params => {
       return
     }
 
-    updateIndicator({
-      sliderIndicator,
-      indicatorType,
-      gridNum,
-    })
+    updateIndicator()
   })
 
   // Resize slider when window resizes
@@ -140,12 +144,7 @@ const slider = params => {
     window.addEventListener('resize', e => {
       resizeTimer && clearTimeout(resizeTimer)
       resizeTimer = setTimeout(() => {
-        resize({
-          sliderListWrapper,
-          sliderList,
-          sliderItems,
-          gridNum,
-        })
+        resize()
       }, 1000)
     })
   }
@@ -153,24 +152,14 @@ const slider = params => {
   // Prev page
   sliderPrev.addEventListener('click', e => {
     updateListPosition({
-      direction: 'prev',
-      sliderList,
-      sliderItems,
-      step,
-      loop,
-      gridNum,
+      direction: 'prev'
     })
   }, false)
 
   // Next page
   sliderNext.addEventListener('click', e => {
     updateListPosition({
-      direction: 'next',
-      sliderList,
-      sliderItems,
-      step,
-      loop,
-      gridNum,
+      direction: 'next'
     })
   }, false)
 
@@ -187,12 +176,6 @@ const slider = params => {
 
       updateListPosition({
         direction: 'locating',
-        sliderList,
-        sliderItems,
-        step,
-        loop,
-        gridNum,
-        indicatorType,
         newIndicatorItemIdx
       })
     }, false)
@@ -200,151 +183,130 @@ const slider = params => {
 
   //#endregion
 
-  API.resize = () => {
-    return resize({
-      sliderListWrapper,
-      sliderList,
-      sliderItems,
-      gridNum,
-    })
-  }
+  //#region Private functions
 
-  return API
+  function updateListPosition(params) {
+    let {
+      direction,
+      newIndicatorItemIdx
+    } = params
 
-}
+    onBeforeSliding(Object.assign(params, callbackParams))
 
-function updateListPosition(params) {
-  let {
-    direction,
-    sliderList,
-    sliderItems,
-    step,
-    loop,
-    gridNum,
-    indicatorType,
-    newIndicatorItemIdx
-  } = params
-
-  if (gridNum > sliderItems.length) {
-    return
-  }
-
-  // Calculate visible items index range
-  if (direction === 'prev') {
-    curVisibleStart -= step
-    if (curVisibleStart < 0) {
-      curVisibleStart = 0
+    // Calculate visible items index range
+    if (direction === 'prev') {
+      curVisibleStart -= step
+      if (curVisibleStart < 0) {
+        curVisibleStart = 0
+      }
+    } else if (direction === 'next') {
+      curVisibleStart += step
+    } else if (direction === 'locating') {
+      if (indicatorType === 'page') {
+        curVisibleStart = newIndicatorItemIdx * gridNum
+      } else {
+        curVisibleStart = newIndicatorItemIdx
+      }
     }
-  } else if (direction === 'next') {
-    curVisibleStart += step
-  } else if (direction === 'locating') {
-    if (indicatorType === 'page') {
-      curVisibleStart = newIndicatorItemIdx * gridNum
-    } else {
-      curVisibleStart = newIndicatorItemIdx
-    }
-  }
-  curVisibleEnd = curVisibleStart + gridNum - 1
+    curVisibleEnd = curVisibleStart + gridNum - 1
 
-  // Deal with edge cases of visible range
-  if (curVisibleEnd > sliderItems.length - 1) {
-    curVisibleEnd = sliderItems.length - 1
-    curVisibleStart = curVisibleEnd + 1 - gridNum
-  }
-  if (loop) {
-    if (reachStart && direction === 'prev') {
+    // Deal with edge cases of visible range
+    if (curVisibleEnd > sliderItems.length - 1) {
       curVisibleEnd = sliderItems.length - 1
       curVisibleStart = curVisibleEnd + 1 - gridNum
     }
-    if (reachEnd && direction === 'next') {
-      curVisibleStart = 0
-      curVisibleEnd = curVisibleStart + gridNum - 1
-    }
-  }
-
-  console.log('curVisibleRange', [curVisibleStart, curVisibleEnd]);
-
-  sliderList.style.transform = `translate3d(-${curVisibleStart * itemWidth}px, 0, 0)`
-
-  updateItemsVisibility({
-    sliderItems,
-    gridNum,
-    step
-  })
-
-}
-
-function updateIndicator(params) {
-  const {
-    sliderIndicator,
-    indicatorType,
-    gridNum
-  } = params
-
-  // Calculate current page number index
-  if (indicatorType === 'page') {
-    if (reachEnd) {
-      curIndicatorItemIdx = indicatorItemNum - 1
-    } else {
-      if (curVisibleStart % gridNum === 0) {
-        curIndicatorItemIdx = curVisibleStart % gridNum
+    if (loop) {
+      if (reachStart && direction === 'prev') {
+        curVisibleEnd = sliderItems.length - 1
+        curVisibleStart = curVisibleEnd + 1 - gridNum
+      }
+      if (reachEnd && direction === 'next') {
+        curVisibleStart = 0
+        curVisibleEnd = curVisibleStart + gridNum - 1
       }
     }
-  } else {
-    curIndicatorItemIdx = curVisibleStart
+
+    console.log('curVisibleRange', [curVisibleStart, curVisibleEnd]);
+
+    sliderList.style.transform = `translate3d(-${curVisibleStart * itemWidth}px, 0, 0)`
+
+    updateItemsVisibility()
+
+    onAfterSliding(Object.assign(params, callbackParams))
+
   }
 
-  console.log('curIndicatorItemIdx', curIndicatorItemIdx);
+  function updateIndicator() {
 
-  // Highlight current indicator based on step
-  sliderIndicator.children.forEach(item => item.classList.remove('active'))
-  sliderIndicator.children[curIndicatorItemIdx].classList.add('active')
-
-}
-
-function updateItemsVisibility(params) {
-  const {
-    sliderItems
-  } = params
-
-  // Make items of current index visible
-  sliderItems.forEach((item, idx) => {
-    item.style.opacity = 0
-
-    if (idx >= curVisibleStart && idx <= curVisibleEnd) {
-      item.style.opacity = 1
+    // Calculate current page number index
+    if (indicatorType === 'page') {
+      if (reachEnd) {
+        curIndicatorItemIdx = indicatorItemNum - 1
+      } else {
+        if (curVisibleStart % gridNum === 0) {
+          curIndicatorItemIdx = curVisibleStart / gridNum
+        }
+      }
+    } else {
+      curIndicatorItemIdx = curVisibleStart
     }
-  })
 
-}
+    console.log('curIndicatorItemIdx', curIndicatorItemIdx);
 
-function resize(params) {
-  const {
-    sliderListWrapper,
-    sliderList,
-    sliderItems,
-    gridNum,
-    init = false
-  } = params
+    // Highlight current indicator based on step
+    sliderIndicator.children.forEach(item => item.classList.remove('active'))
+    sliderIndicator.children[curIndicatorItemIdx].classList.add('active')
 
-  const wrapperWidth = sliderListWrapper.clientWidth
-  itemWidth = wrapperWidth / gridNum
-  const listWidth = itemWidth * sliderItems.length
+  }
 
-  // Set slider list width
-  sliderList.style.width = `${listWidth}px`
+  function updateItemsVisibility() {
 
-  // Set slider item width
-  sliderItems.forEach((item, idx) => {
-    item.style.width = `${itemWidth}px`
+    // Make items of current index visible
+    sliderItems.forEach((item, idx) => {
+      item.style.opacity = 0
 
-    // Display current slide items
-    if (idx < gridNum && init) {
-      item.style.opacity = 1
-    }
-  })
+      if (idx >= curVisibleStart && idx <= curVisibleEnd) {
+        item.style.opacity = 1
+      }
+    })
 
-  return params
+  }
+
+  //#endregion
+
+  //#region Public functions
+
+  API.resize = resize
+
+  function resize(params) {
+    const {
+      init = false
+    } = params
+
+    const wrapperWidth = sliderListWrapper.clientWidth
+    itemWidth = wrapperWidth / gridNum
+    const listWidth = itemWidth * sliderItems.length
+
+    // Set slider list width
+    sliderList.style.width = `${listWidth}px`
+
+    // Set slider item width
+    sliderItems.forEach((item, idx) => {
+      item.style.width = `${itemWidth}px`
+
+      // Display current slide items
+      if (idx < gridNum && init) {
+        item.style.opacity = 1
+      }
+    })
+
+    return params
+  }
+
+  //#endregion
+
+  return API
+
 }
 
 export default slider
