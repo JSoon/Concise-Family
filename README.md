@@ -27,7 +27,7 @@ Concise-Slider offers you a quite light slider but consists of sufficient featur
 <link rel="stylesheet" href="/public/concise-slider.css">
 <script src="/public/concise-slider.js"></script>
 <script>
-  const mySlider = ConciseFamily['concise-slider']
+  const mySlider = window.ConciseFamily['concise-slider']
 </script>
 ```
 2. ES6 module

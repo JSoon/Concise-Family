@@ -20,6 +20,7 @@ import 'classlist-polyfill'
  * @param {function}  params.onCreated        Fired when all the DOM have been created
  * @param {function}  params.onBeforeSliding  Fired before sliding
  * @param {function}  params.onAfterSliding   Fired after sliding
+ * @param {function}  params.onResized        Fired when the slider has been resized
  */
 
 const slider = params => {
@@ -36,7 +37,8 @@ const slider = params => {
     autoResize = false,
     onCreated = () => {},
     onBeforeSliding = () => {},
-    onAfterSliding = () => {}
+    onAfterSliding = () => {},
+    onResized = () => {},
   } = params
 
   // API exposed to the instance
@@ -243,9 +245,7 @@ const slider = params => {
       if (reachEnd) {
         curIndicatorItemIdx = indicatorItemNum - 1
       } else {
-        if (curVisibleStart % gridNum === 0) {
-          curIndicatorItemIdx = curVisibleStart / gridNum
-        }
+        curIndicatorItemIdx = Math.round(getVisibleMedian([curVisibleStart, curVisibleEnd]) / gridNum)
       }
     } else {
       curIndicatorItemIdx = curVisibleStart
@@ -278,7 +278,7 @@ const slider = params => {
 
   API.resize = resize
 
-  function resize(params) {
+  function resize(params = {}) {
     const {
       init = false
     } = params
@@ -300,6 +300,8 @@ const slider = params => {
       }
     })
 
+    onResized(Object.assign(params, callbackParams))
+
     return params
   }
 
@@ -307,6 +309,30 @@ const slider = params => {
 
   return API
 
+}
+
+/**
+ * @description Get median of visible items index range
+ * 
+ * @param {Array} range [start, end] 
+ */
+function getVisibleMedian(range) {
+  const rangeArray = []
+  for (let i = range[0]; i <= range[1]; i += 1) {
+    rangeArray.push(i)
+  }
+
+  if (rangeArray.length <= 2) {
+    return range[0]
+  }
+
+  const even = rangeArray.length % 2 === 0 ? true : false
+  // [4,5,6,7] => 5, [4,5,6,7,8] => 6
+  if (even) {
+    return (rangeArray[rangeArray.length / 2] + rangeArray[rangeArray.length / 2 - 1]) / 2
+  } else {
+    return rangeArray[(rangeArray.length - 1) / 2]
+  }
 }
 
 export default slider

@@ -8,10 +8,56 @@
   <title>Concise slider test page</title>
 
   <link rel="stylesheet" href="/concise-slider.css">
+
+  <style>
+    body {
+      font-family: PingFang SC, Lantinghei SC, Helvetica Neue, Helvetica, Arial, Microsoft YaHei, 微软雅黑, STHeitiSC-Light, simsun, 宋体, WenQuanYi Zen Hei, WenQuanYi Micro Hei, "sans-serif";
+      color: #607d8b;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .slider-item {
+      height: 10rem;
+      background-color: #eee;
+      border-radius: 1.2rem;
+      text-align: center;
+      line-height: 10rem;
+      font-size: 2rem;
+    }
+
+    .slider-prev,
+    .slider-next {
+      position: absolute;
+      width: 3rem;
+      height: 3rem;
+      margin-top: -3.6rem;
+      border-radius: .8rem;
+      line-height: 3rem;
+      text-align: center;
+      transition: all .2s ease-in;
+    }
+
+    .slider-prev:hover,
+    .slider-next:hover {
+      transform: scale(1.08);
+    }
+
+    .slider-prev {
+      left: 0;
+    }
+
+    .slider-next {
+      right: 0;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Concise Slider -->
+  <h1>Concise Slider</h1>
+
   <div id="J_ConciseSlider">
     <div class="slider-wrapper">
       <div class="slider-list-wrapper">
@@ -26,11 +72,6 @@
         </div>
       </div>
     </div>
-    <style>
-      .slider-item {
-        height: 5rem;
-      }
-    </style>
   </div>
 
   <!-- <script src="/demo.js"></script> -->
@@ -42,10 +83,14 @@
       // step: 2,
       loop: true,
       // indicatorType: 'single',
+      autoResize: true,
       indicatorCtrl: true,
       onCreated: params => {
-        console.log(params);
-      }
+        console.log('onCreated', params);
+      },
+      onResized: params => {
+        console.log('onResized', params);
+      },
     })
   </script>
 </body>
