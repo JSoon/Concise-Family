@@ -8,7 +8,8 @@ WORKDIR /usr/src/concise-family
 COPY package.json .
 
 # Run the command inside your image filesystem
-RUN npm install --registry=https://registry.npm.taobao.org
+RUN npm config set registry https://registry.npm.taobao.org
+RUN npm install
 
 # Inform Docker that the container is listening on the specified port at runtime.
 EXPOSE 4000
