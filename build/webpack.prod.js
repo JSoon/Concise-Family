@@ -5,7 +5,7 @@ const common = require('./webpack.common.js');
 const TerserPlugin = require('terser-webpack-plugin');
 const banner = require('./banner');
 const constants = require('./constants');
-const publicDate = require('./date'); // 发布日期
+const CopyPlugin = require('copy-webpack-plugin')
 
 // https://webpack.js.org/guides/production/
 module.exports = merge(common, {
@@ -43,6 +43,10 @@ module.exports = merge(common, {
 			// https://github.com/webpack/webpack/issues/9732
 			filename: '[file].map',
 			// exclude: ['vendor.js']
-		})
+		}),
+		new CopyPlugin([{
+			from: path.resolve(constants.srcPath, 'demo'),
+			to: path.resolve(constants.publicPath, 'demo')
+		}]),
 	]
 });

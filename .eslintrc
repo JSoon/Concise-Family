@@ -2,8 +2,10 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "commonjs": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module"
   },
