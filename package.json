@@ -50,10 +50,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JSoon/concise-slider.git"
+    "url": "git+https://github.com/JSoon/concise-family.git"
   },
   "bugs": {
-    "url": "https://github.com/JSoon/concise-slider/issues"
+    "url": "https://github.com/JSoon/concise-family/issues"
   },
-  "homepage": "https://github.com/JSoon/concise-slider#readme"
+  "homepage": "https://github.com/JSoon/concise-family#readme"
 }
