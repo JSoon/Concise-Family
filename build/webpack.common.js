@@ -46,7 +46,8 @@ module.exports = {
         'bower_components'
       ],
       aggregateTimeout: 1000
-    }
+    },
+    publicPath: `${constants.staticPath}/`
   },
   module: {
     rules: [{
