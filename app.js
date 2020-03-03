@@ -45,4 +45,4 @@ app.use(servePublic)
 const mountedApp = new Koa()
 mountedApp.use(mount(publicPath, app))
 
-mountedApp.listen(3000);
+mountedApp.listen(4000);
