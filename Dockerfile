@@ -8,8 +8,8 @@ WORKDIR /usr/src/concise-family
 COPY . .
 
 # Run the command inside your image filesystem
-RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
-RUN cnpm install
+# RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
+# RUN cnpm install
 
 # Inform Docker that the container is listening on the specified port at runtime.
 EXPOSE 4000
