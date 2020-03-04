@@ -1,6 +1,6 @@
 {
   "name": "concise-family",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Concise components.",
   "main": "public/concise-family.js",
   "scripts": {
