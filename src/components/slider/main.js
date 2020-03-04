@@ -17,7 +17,7 @@ import 'classlist-polyfill'
  * @param {boolean}   params.autoResize     Whether to resize slider when window resize fires, default to false
  * 
  * Hooks functions
- * @param {function}  params.onCreated        Fired when all the DOM have been created
+ * @param {function}  params.onCreated        Fired when all the DOM have been created and the sizes have been calculated
  * @param {function}  params.onBeforeSliding  Fired before sliding
  * @param {function}  params.onAfterSliding   Fired after sliding
  * @param {function}  params.onResized        Fired when the slider has been resized
@@ -53,6 +53,7 @@ const slider = params => {
     reachEnd = false
   let itemWidth // Slide individual item width
   let resizeTimer // Resize slider timer
+  let singleLoop = loop && step === 1
 
   if (!selector) {
     throw 'Slider has no id or class selector!'
@@ -68,7 +69,8 @@ const slider = params => {
   const sliderWrapper = sliderEle.querySelector('.slider-wrapper') || sliderEle
   const sliderListWrapper = sliderWrapper.querySelector('.slider-list-wrapper')
   const sliderList = sliderWrapper.querySelector('.slider-list')
-  const sliderItems = sliderWrapper.querySelectorAll('.slider-item')
+  let sliderItems = sliderWrapper.querySelectorAll('.slider-item')
+
   const sliderIndicator = document.createElement('div')
   sliderIndicator.classList.add('slider-indicator')
 
@@ -114,8 +116,6 @@ const slider = params => {
     curVisibleEnd
   }
 
-  onCreated(callbackParams)
-
   // Calculate all the widths dynamically
   resize({
     init: true
@@ -123,6 +123,8 @@ const slider = params => {
 
   // Display slider list after width being initialized
   sliderList.style.display = 'block'
+
+  onCreated(callbackParams)
 
   //#region Controllers
 
@@ -193,7 +195,7 @@ const slider = params => {
       newIndicatorItemIdx
     } = params
 
-    onBeforeSliding(Object.assign(params, callbackParams))
+    onBeforeSliding(Object.assign(params, updateCallbackParams()))
 
     // Calculate visible items index range
     if (direction === 'prev') {
@@ -217,6 +219,7 @@ const slider = params => {
       curVisibleEnd = sliderItems.length - 1
       curVisibleStart = curVisibleEnd + 1 - gridNum
     }
+
     if (loop) {
       if (reachStart && direction === 'prev') {
         curVisibleEnd = sliderItems.length - 1
@@ -234,7 +237,7 @@ const slider = params => {
 
     updateItemsVisibility()
 
-    onAfterSliding(Object.assign(params, callbackParams))
+    onAfterSliding(Object.assign(params, updateCallbackParams()))
 
   }
 
@@ -272,6 +275,14 @@ const slider = params => {
 
   }
 
+  function updateCallbackParams() {
+    return Object.assign(callbackParams, {
+      curIndicatorItemIdx,
+      curVisibleStart,
+      curVisibleEnd
+    })
+  }
+
   //#endregion
 
   //#region Public functions
@@ -300,7 +311,7 @@ const slider = params => {
       }
     })
 
-    onResized(Object.assign(params, callbackParams))
+    onResized(Object.assign(params, updateCallbackParams()))
 
     return params
   }
