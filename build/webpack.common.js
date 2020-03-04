@@ -34,10 +34,10 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   devServer: {
-    open: true,
-    openPage: constants.srcPath,
-    // contentBase: constants.rootPath,
+    contentBase: constants.srcPath,
     // watchContentBase: false,
+    open: true,
+    openPage: 'demo',
     compress: true,
     port: 9000,
     watchOptions: {
