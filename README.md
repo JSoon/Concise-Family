@@ -5,10 +5,16 @@ Concise-Family is a vanilla Javascript library consisting of Javascript componen
 
 # Table of contents
 - [Table of contents](#table-of-contents)
+- [Install](#install)
 - [Build](#build)
 - [Concise-Slider](#concise-slider)
   - [Usage](#usage)
   - [Options](#options)
+
+# Install
+```js
+npm i concise-family -D
+```
 
 # Build
 There's nothing more to say about the building work which is bundled with Webpack.
