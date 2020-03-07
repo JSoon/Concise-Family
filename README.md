@@ -84,7 +84,7 @@ mySlider({
  * @param {boolean}   params.autoResize     Whether to resize slider when window resize fires, default to false
  * 
  * Hooks functions
- * @param {function}  params.onCreated        Fired when all the DOM have been created
+ * @param {function}  params.onCreated        Fired when all the DOM have been created and the sizes have been calculated
  * @param {function}  params.onBeforeSliding  Fired before sliding
  * @param {function}  params.onAfterSliding   Fired after sliding
  * @param {function}  params.onResized        Fired when the slider has been resized
