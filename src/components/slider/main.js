@@ -139,6 +139,8 @@ const slider = params => {
     if (e.target !== sliderList) {
       return
     }
+    
+    onAfterSliding(Object.assign(params, updateCallbackParams()))
 
     updateIndicator()
   })
@@ -236,8 +238,6 @@ const slider = params => {
     sliderList.style.transform = `translate3d(-${curVisibleStart * itemWidth}px, 0, 0)`
 
     updateItemsVisibility()
-
-    onAfterSliding(Object.assign(params, updateCallbackParams()))
 
   }
 
